@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Autoria del instalador MSI de qrgen (WiX Toolset v6).
+
+  El paquete usa Scope="perUserOrMachine", por lo que el wizard muestra una
+  pagina donde el usuario elige entre instalar "solo para mi" (sin elevacion,
+  en LocalAppData) o "para todos los usuarios" (eleva via UAC e instala en
+  Archivos de programa). La carpeta de instalacion se agrega al PATH del
+  ambito correspondiente.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+	 xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <Package Name="qrgen"
+		   Manufacturer="$(var.Manufacturer)"
+		   Version="$(var.ProductVersion)"
+		   UpgradeCode="7C1F4B2E-3A8D-4C6B-9E50-2F0B9A4D51C7"
+		   Scope="perUserOrMachine"
+		   Compressed="true"
+		   InstallerVersion="500">
+
+	<SummaryInformation Description="Utilitario de consola para generar codigos QR" />
+
+	<MajorUpgrade DowngradeErrorMessage="Ya hay instalada una version mas reciente de qrgen." />
+
+	<MediaTemplate EmbedCab="true" />
+
+	<!-- El wizard avanzado incluye la pagina de seleccion de alcance. -->
+	<Property Id="ApplicationFolderName" Value="qrgen" />
+	<Property Id="WixAppFolder" Value="WixPerUserFolder" />
+	<Property Id="ARPNOREPAIR" Value="1" />
+
+	<ui:WixUI Id="WixUI_Advanced" />
+	<WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
+	<Feature Id="Main" Title="qrgen" Level="1" AllowAbsent="false">
+	  <ComponentGroupRef Id="ApplicationFiles" />
+	  <ComponentGroupRef Id="PathEntries" />
+	</Feature>
+
+  </Package>
+
+  <Fragment>
+	<!-- APPLICATIONFOLDER es la propiedad que WixUI_Advanced redirige segun
+		 el alcance elegido (ProgramFiles64Folder o LocalAppDataFolder). -->
+	<StandardDirectory Id="ProgramFiles6432Folder">
+	  <Directory Id="APPLICATIONFOLDER" Name="qrgen" />
+	</StandardDirectory>
+
+	<!-- Todos los archivos publicados se incorporan automaticamente. -->
+	<ComponentGroup Id="ApplicationFiles" Directory="APPLICATIONFOLDER">
+	  <Files Include="$(var.PublishDir)\**" />
+	</ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+	<ComponentGroup Id="PathEntries" Directory="APPLICATIONFOLDER">
+
+	  <!-- Instalacion para todos los usuarios: PATH de maquina. -->
+	  <Component Id="PathMachine" Guid="9B3D6C41-5E27-4F8A-8D13-6C2A7E940B55" Bitness="always64" Condition="ALLUSERS = 1">
+		<Environment Id="PathSystem"
+					 Name="PATH"
+					 Value="[APPLICATIONFOLDER]"
+					 Permanent="false"
+					 Part="last"
+					 Action="set"
+					 System="yes" />
+		<RegistryValue Root="HKLM"
+					   Key="Software\qrgen"
+					   Name="InstallPath"
+					   Type="string"
+					   Value="[APPLICATIONFOLDER]"
+					   KeyPath="yes" />
+	  </Component>
+
+	  <!-- Instalacion por usuario: PATH del usuario actual. -->
+	  <Component Id="PathUser" Guid="4E8A1D97-72B6-4F03-A5C4-1D9F6B2E8A30" Bitness="always64" Condition="NOT ALLUSERS">
+		<Environment Id="PathUser"
+					 Name="PATH"
+					 Value="[APPLICATIONFOLDER]"
+					 Permanent="false"
+					 Part="last"
+					 Action="set"
+					 System="no" />
+		<RegistryValue Root="HKCU"
+					   Key="Software\qrgen"
+					   Name="InstallPath"
+					   Type="string"
+					   Value="[APPLICATIONFOLDER]"
+					   KeyPath="yes" />
+	  </Component>
+
+	</ComponentGroup>
+  </Fragment>
+
+</Wix>

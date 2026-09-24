@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Cocosoft.Cli.Tools.QRGenerator WhatsApp": {
+      "commandName": "Project",
+      "commandLineArgs": "whatsapp -v --phone-number +573004999946 \"Hellow world!\""
+    },
+    "Cocosoft.Cli.Tools.QRGenerator URL": {
+      "commandName": "Project",
+      "commandLineArgs": "url -v -i instagram -d #2F3191 -l #A7CF45 -o C:\\Users\\MauricioGongora\\Downloads\\azul-fondo-blanco.png \"https://www.instagram.com/tecnicarpas.sm\""
+    },
+    "Cocosoft.Cli.Tools.QRGenerator Plain Text": {
+      "commandName": "Project",
+      "commandLineArgs": "-v -i custom --icon-path C:\\Users\\MauricioGongora\\Downloads\\tecnicarpas_logo_vector.svg \"Hellow world!\""
+    }
+  }
+}

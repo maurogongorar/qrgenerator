@@ -1,0 +1,32 @@
+<Project Sdk="WixToolset.Sdk/6.0.2">
+
+  <PropertyGroup>
+	<OutputName>qrgen-setup</OutputName>
+	<OutputType>Package</OutputType>
+	<InstallerPlatform>x64</InstallerPlatform>
+
+	<!-- El componente HKLM esta condicionado a ALLUSERS=1, por lo que ICE105
+		 reporta un falso positivo en los paquetes de doble alcance. -->
+	<SuppressIces>ICE105</SuppressIces>
+
+	<!-- Valores por defecto; el script build-msi.ps1 los sobreescribe. -->
+	<ProductVersion Condition="'$(ProductVersion)' == ''">1.0.0</ProductVersion>
+	<Manufacturer Condition="'$(Manufacturer)' == ''">QRGenerator</Manufacturer>
+	<PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildThisFileDirectory)..\..\artifacts\win-x64</PublishDir>
+
+	<DefineConstants>
+	  ProductVersion=$(ProductVersion);
+	  Manufacturer=$(Manufacturer);
+	  PublishDir=$(PublishDir)
+	</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<PackageReference Include="WixToolset.UI.wixext" Version="6.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<BindPath Include="$(MSBuildThisFileDirectory)" />
+  </ItemGroup>
+
+</Project>
