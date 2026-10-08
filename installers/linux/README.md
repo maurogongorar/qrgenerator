@@ -1,30 +1,31 @@
-# Instalador de qrgen para Linux (pendiente)
+# qrgen Linux Installer (pending)
 
-En Linux la instalacion "para todos los usuarios" es el modelo nativo de los
-gestores de paquetes, y la instalacion "solo para mi" se resuelve con un
-directorio dentro del home del usuario.
+On Linux, "system-wide installation" is the native model used by package
+managers, while "per-user installation" is handled by using a directory
+within the user's home directory.
 
-## Formatos previstos
+## Planned Formats
 
-| Formato | Alcance | Notas |
+| Format | Scope | Notes |
 | --- | --- | --- |
-| `.deb` / `.rpm` | Todos los usuarios | Requiere `sudo`; instala en `/opt/qrgen` con symlink en `/usr/local/bin/qrgen`. Los centros de software (GNOME Software, Discover) los presentan con asistente grafico. |
-| `.tar.gz` + script | Solo el usuario | Instala en `~/.local/share/qrgen` con symlink en `~/.local/bin/qrgen`. |
+| `.deb` / `.rpm` | All users | Requires `sudo`; installs to `/opt/qrgen` with a symlink in `/usr/local/bin/qrgen`. Software centers (GNOME Software, Discover) present them with a graphical wizard. |
+| `.tar.gz` + script | Current user only | Installs to `~/.local/share/qrgen` with a symlink in `~/.local/bin/qrgen`. |
 
-## Pasos de implementacion
+## Implementation Steps
 
-1. Publicar artefactos: `./build/Publish-QrGen.ps1 -Runtime linux-x64`
-   (repetir con `linux-arm64`).
-2. Generar los paquetes con `dotnet-deb`/`dotnet-rpm`, `fpm` o `nfpm` a partir
-   de `artifacts/<rid>`.
-3. Incluir scripts `postinst`/`postrm` que creen y eliminen el symlink
-   `/usr/local/bin/qrgen`.
-4. Para el modo por usuario, agregar `~/.local/bin` al PATH escribiendo en
-   `~/.profile` solo si aun no esta presente.
-5. Opcional: publicar como AppImage o paquete Flatpak para una experiencia de
-   instalacion grafica uniforme entre distribuciones.
+1. Publish artifacts: `./build/Publish-QrGen.ps1 -Runtime linux-x64`
+   (repeat with `linux-arm64`).
+2. Generate the packages using `dotnet-deb`/`dotnet-rpm`, `fpm` or `nfpm` from
+   `artifacts/<rid>`.
+3. Include `postinst`/`postrm` scripts that create and remove the
+   `/usr/local/bin/qrgen` symlink.
+4. For per-user installation, add `~/.local/bin` to the PATH by writing to
+   `~/.profile` only if it is not already present.
+5. Optional: publish as an AppImage or Flatpak package for a consistent
+   graphical installation experience across distributions.
 
-## Nota
+## Note
 
-El ejecutable se llama `qrgen` (sin extension) y debe conservar el bit de
-ejecucion; `Publish-QrGen.ps1` ya aplica `chmod +x` al publicar en Unix.
+The executable is named `qrgen` (without an extension) and must retain its
+executable bit; `Publish-QrGen.ps1` already applies `chmod +x` when publishing on
+Unix.

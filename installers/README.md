@@ -1,39 +1,39 @@
-# Instaladores de qrgen
+# qrgen Installers
 
-Esta carpeta contiene los instaladores tipo *wizard* de `qrgen`, organizados por
-plataforma. El proyecto .NET (`QRGenerator/QRGenerator.csproj`) es
-multiplataforma: no fija un `RuntimeIdentifier`, sino que declara los RIDs
-soportados y el runtime se elige al publicar.
+This folder contains the wizard-style installers for `qrgen`, organized by
+platform. The .NET project (`QRGenerator/QRGenerator.csproj`) is
+cross-platform: it does not specify a fixed `RuntimeIdentifier`, but instead
+declares the supported RIDs, and the runtime is selected at publish time.
 
 ```
 installers/
-  windows/   Instalador MSI (WiX Toolset v6)   -> implementado
-  macos/     Instalador .pkg                   -> pendiente
-  linux/     Paquetes .deb / .rpm              -> pendiente
+  windows/   MSI installer (WiX Toolset v6)   -> implemented
+  macos/     .pkg installer                   -> pending
+  linux/     .deb / .rpm packages             -> pending
 ```
 
-## 1. Publicar los artefactos portables
+## 1. Publishing Portable Artifacts
 
-`build/Publish-QrGen.ps1` funciona en Windows, macOS y Linux con PowerShell 7+.
+`build/Publish-QrGen.ps1` works on Windows, macOS, and Linux with PowerShell 7+..
 
 ```powershell
-# Detecta automaticamente el RID de la maquina actual
+# Automatically detects the RID of the current machine
 ./build/Publish-QrGen.ps1
 
-# RID explicito
+# Explicit RID
 ./build/Publish-QrGen.ps1 -Runtime win-x64
 ./build/Publish-QrGen.ps1 -Runtime osx-arm64
 ./build/Publish-QrGen.ps1 -Runtime linux-x64
 
-# Variante liviana que requiere el runtime .NET 10 instalado
+# Lightweight variant that requires .NET 10 to be installed
 ./build/Publish-QrGen.ps1 -Runtime win-x64 -FrameworkDependent
 ```
 
-Salida: `artifacts/<rid>` (o `artifacts/<rid>-fx` para framework-dependent).
-Por defecto se genera un ejecutable unico **self-contained**, por lo que la
-maquina destino no necesita tener .NET instalado.
+Output: artifacts/<rid> (or artifacts/<rid>-fx for framework-dependent publishing).
+By default, a single self-contained executable is generated, so the
+target machine does not need to have .NET installed.
 
-## 2. Windows: instalador MSI
+## 2. Windows: MSI installer
 
 ```powershell
 ./installers/windows/Build-Msi.ps1
@@ -41,36 +41,37 @@ maquina destino no necesita tener .NET instalado.
 ./installers/windows/Build-Msi.ps1 -FrameworkDependent
 ```
 
-El MSI queda en `artifacts/installers/`.
+The MSI installer is generated in `artifacts/installers/`.
 
-### Comportamiento del wizard
+### Wizard Behavior
 
-El paquete se declara con `Scope="perUserOrMachine"` y usa el conjunto de
-dialogos `WixUI_Advanced`, por lo que el usuario ve una pagina donde elige:
+The package is declared with `Scope="perUserOrMachine"` and uses the
+`WixUI_Advanced` dialog set, so the user is presented with a page where they
+can choose:
 
-| Opcion | Carpeta | PATH | Elevacion |
+| Option | Folder | PATH | Elevation |
 | --- | --- | --- | --- |
-| Solo para mi | `%LOCALAPPDATA%\Programs\qrgen` | PATH de usuario | No |
-| Para todos los usuarios | `%ProgramFiles%\qrgen` | PATH de sistema | Si (UAC) |
+| SJust for me | `%LOCALAPPDATA%\Programs\qrgen` | User PATH | No |
+| For all users | `%ProgramFiles%\qrgen` | System PATH | Yes (UAC) |
 
-La entrada de PATH se elimina automaticamente al desinstalar desde
-*Aplicaciones instaladas* de Windows. Los cambios de PATH aplican a terminales
-abiertas despues de la instalacion.
+The PATH entry is automatically removed when uninstalling from Windows
+*Installed apps*. PATH changes apply to terminals opened after the
+installation.
 
-### Instalacion silenciosa
+### Silent Installation
 
 ```powershell
-msiexec /i qrgen-setup-1.0.0-win-x64.msi /qn                  # por usuario
-msiexec /i qrgen-setup-1.0.0-win-x64.msi /qn ALLUSERS=1       # todos (elevado)
-msiexec /x qrgen-setup-1.0.0-win-x64.msi /qn                  # desinstalar
+msiexec /i qrgen-setup-1.0.0-win-x64.msi /qn                  # per-user
+msiexec /i qrgen-setup-1.0.0-win-x64.msi /qn ALLUSERS=1       # per-machine (elevated)
+msiexec /x qrgen-setup-1.0.0-win-x64.msi /qn                  # uninstall
 ```
 
-### Requisitos de compilacion
+### Build Requirements
 
-Solo el SDK de .NET 10 y acceso a NuGet: `WixToolset.Sdk` y
-`WixToolset.UI.wixext` se restauran como paquetes. El `.wixproj` no forma parte
-de `QRGenerator.slnx` para no afectar la compilacion normal de la solucion.
+Only the .NET 10 SDK and access to NuGet are required: `WixToolset.Sdk` and
+`WixToolset.UI.wixext` are restored as packages. The `.wixproj` is not included
+in `QRGenerator.slnx` to avoid affecting the normal solution build.
 
-## 3. Siguientes plataformas
+## 3. Next Platforms
 
-Ver `installers/macos/README.md` e `installers/linux/README.md`.
+See `installers/macos/README.md` and `installers/linux/README.md`.

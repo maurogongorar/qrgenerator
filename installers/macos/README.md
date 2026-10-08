@@ -1,31 +1,28 @@
-# Instalador de qrgen para macOS (pendiente)
+# qrgen macOS Installer (pending)
 
-Plan previsto para mantener la misma experiencia de wizard que en Windows.
+Planned approach to provide the same wizard-style installation experience as on Windows.
 
-## Formato
+## Format
 
-Instalador `.pkg` (Distribution package) generado con `pkgbuild` +
-`productbuild`. El asistente grafico de macOS (`Installer.app`) ofrece de forma
-nativa la seleccion de destino: *Instalar solo para mi* frente a *Instalar para
-todos los usuarios del equipo*, que es el equivalente de la pagina de alcance
-del MSI y solicita autenticacion de administrador cuando corresponde.
+`.pkg` installer (Distribution package) generated with `pkgbuild` + `productbuild`. The macOS graphical
+installer (`Installer.app`) natively provides destination selection: *Install for me only* versus *Install for all users of the computer*,
+which is the equivalent of the MSI scope selection page and requests administrator authentication when required.
 
-## Pasos de implementacion
+## Implementation Steps
 
-1. Publicar artefactos: `./build/Publish-QrGen.ps1 -Runtime osx-arm64` (repetir
-   con `osx-x64` y combinar en un binario universal con `lipo` si se desea).
-2. `pkgbuild --root artifacts/osx-arm64 --identifier com.qrgenerator.qrgen
-   --version 1.0.0 --install-location /usr/local/qrgen qrgen-component.pkg`
+1. Publish artifacts: `./build/Publish-QrGen.ps1 -Runtime osx-arm64` (repeat
+   with `osx-x64` and combine them into a universal binary with `lipo` if desired).
+2. `pkgbuild --root artifacts/osx-arm64 --identifier com.qrgenerator.qrgen --version 1.0.0 --install-location /usr/local/qrgen qrgen-component.pkg`
 3. `productbuild --distribution Distribution.xml --package-path . qrgen.pkg`
-   con `<domains enable_anywhere="true" enable_currentUserHome="true"
-   enable_localSystem="true"/>` para habilitar la seleccion de alcance.
-4. Script `postinstall` que cree el symlink del comando:
-   - Todos los usuarios: `/usr/local/bin/qrgen` (ya esta en el PATH del sistema).
-   - Solo el usuario: `~/.local/bin/qrgen` y agregar esa ruta a
-	 `~/.zprofile` si aun no esta en el PATH.
-5. Firmar y notarizar con `productsign` + `notarytool` para evitar Gatekeeper.
+   with `<domains enable_anywhere="true" enable_currentUserHome="true" enable_localSystem="true"/>`
+   to enable scope selection.
+4. Add a `postinstall` script to create the command symlink:
+   - All users: `/usr/local/bin/qrgen` (already included in the system PATH).
+   - Current user only: `~/.local/bin/qrgen` and add that path to
+	 `~/.zprofile` if it is not already in the PATH.
+5. Sign and notarize with `productsign` + `notarytool` to avoid Gatekeeper warnings.
 
-## Nota
+## Note
 
-El ejecutable se llama `qrgen` (sin extension) y debe conservar el bit de
-ejecucion; `Publish-QrGen.ps1` ya aplica `chmod +x` al publicar en Unix.
+The executable is named `qrgen` (without an extension) and must retain its executable bit;
+`Publish-QrGen.ps1` already applies `chmod +x` when publishing on Unix.
