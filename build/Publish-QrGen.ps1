@@ -41,7 +41,7 @@ if (-not $Runtime) {
 }
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$project = Join-Path $repoRoot 'QRGenerator' 'QRGenerator.csproj'
+$project = Join-Path $repoRoot (Join-Path 'src' (Join-Path 'Cocosoft.Cli.Tools.QRGenerator' 'Cocosoft.Cli.Tools.QRGenerator.csproj'))
 
 if (-not $OutputDirectory) {
 	$folder = if ($FrameworkDependent) { "$Runtime-fx" } else { $Runtime }
