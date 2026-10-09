@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Autoria del instalador MSI de qrgen (WiX Toolset v6).
+  qrgen MSI installer authoring (WiX Toolset v6).
 
-  El paquete usa Scope="perUserOrMachine", por lo que el wizard muestra una
-  pagina donde el usuario elige entre instalar "solo para mi" (sin elevacion,
-  en LocalAppData) o "para todos los usuarios" (eleva via UAC e instala en
-  Archivos de programa). La carpeta de instalacion se agrega al PATH del
-  ambito correspondiente.
+  The package uses Scope="perUserOrMachine", so the wizard shows a page where
+  the user chooses between installing "just for me" (no elevation, under
+  LocalAppData) or "for all users" (elevates via UAC and installs under Program
+  Files). The installation folder is added to the PATH of the matching scope.
+
+  The license page text is generated from the repository LICENSE (GNU GPL v3)
+  by New-LicenseRtf.ps1.
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
 	 xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
@@ -19,19 +21,40 @@
 		   Compressed="true"
 		   InstallerVersion="500">
 
-	<SummaryInformation Description="Utilitario de consola para generar codigos QR" />
+	<SummaryInformation Description="Command line utility to generate QR codes" />
 
-	<MajorUpgrade DowngradeErrorMessage="Ya hay instalada una version mas reciente de qrgen." />
+	<MajorUpgrade DowngradeErrorMessage="A newer version of qrgen is already installed." />
 
 	<MediaTemplate EmbedCab="true" />
 
-	<!-- El wizard avanzado incluye la pagina de seleccion de alcance. -->
+	<!-- The advanced wizard includes the install scope selection page. -->
 	<Property Id="ApplicationFolderName" Value="qrgen" />
 	<Property Id="WixAppFolder" Value="WixPerUserFolder" />
 	<Property Id="ARPNOREPAIR" Value="1" />
 
 	<ui:WixUI Id="WixUI_Advanced" />
 	<WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
+	<!--
+	  Default folder proposed on the install location page for each scope.
+	  WixUI_Advanced publishes APPLICATIONFOLDER = [WixPerMachineFolder] or
+	  [WixPerUserFolder]. Its own per machine default uses ProgramFilesFolder,
+	  which Windows Installer redirects to %LOCALAPPDATA%\Programs while the
+	  package is still per user, so the environment variable is used instead to
+	  always propose the real Program Files folder.
+	-->
+	<SetProperty Id="WixPerMachineFolder"
+				 Action="SetQrgenPerMachineFolder"
+				 Value="[%ProgramW6432]\[ApplicationFolderName]"
+				 After="WixSetDefaultPerMachineFolder"
+				 Sequence="both" />
+
+	<SetProperty Id="WixPerUserFolder"
+				 Action="SetQrgenPerUserFolder"
+				 Value="[LocalAppDataFolder]Programs\[ApplicationFolderName]"
+				 After="WixSetDefaultPerMachineFolder"
+				 Sequence="both" />
+
 
 	<Feature Id="Main" Title="qrgen" Level="1" AllowAbsent="false">
 	  <ComponentGroupRef Id="ApplicationFiles" />
@@ -41,13 +64,13 @@
   </Package>
 
   <Fragment>
-	<!-- APPLICATIONFOLDER es la propiedad que WixUI_Advanced redirige segun
-		 el alcance elegido (ProgramFiles64Folder o LocalAppDataFolder). -->
+	<!-- APPLICATIONFOLDER is the property that WixUI_Advanced redirects based
+		 on the chosen scope (ProgramFiles64Folder or LocalAppDataFolder). -->
 	<StandardDirectory Id="ProgramFiles6432Folder">
 	  <Directory Id="APPLICATIONFOLDER" Name="qrgen" />
 	</StandardDirectory>
 
-	<!-- Todos los archivos publicados se incorporan automaticamente. -->
+	<!-- Every published file is harvested automatically. -->
 	<ComponentGroup Id="ApplicationFiles" Directory="APPLICATIONFOLDER">
 	  <Files Include="$(var.PublishDir)\**" />
 	</ComponentGroup>
@@ -56,7 +79,7 @@
   <Fragment>
 	<ComponentGroup Id="PathEntries" Directory="APPLICATIONFOLDER">
 
-	  <!-- Instalacion para todos los usuarios: PATH de maquina. -->
+	  <!-- All users installation: machine PATH. -->
 	  <Component Id="PathMachine" Guid="9B3D6C41-5E27-4F8A-8D13-6C2A7E940B55" Bitness="always64" Condition="ALLUSERS = 1">
 		<Environment Id="PathSystem"
 					 Name="PATH"
@@ -73,7 +96,7 @@
 					   KeyPath="yes" />
 	  </Component>
 
-	  <!-- Instalacion por usuario: PATH del usuario actual. -->
+	  <!-- Per user installation: current user PATH. -->
 	  <Component Id="PathUser" Guid="4E8A1D97-72B6-4F03-A5C4-1D9F6B2E8A30" Bitness="always64" Condition="NOT ALLUSERS">
 		<Environment Id="PathUser"
 					 Name="PATH"

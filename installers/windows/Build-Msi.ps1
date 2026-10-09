@@ -1,14 +1,14 @@
 #!/usr/bin/env pwsh
-# Genera el instalador MSI (wizard) de qrgen para Windows.
+# Builds the qrgen MSI installer (wizard) for Windows.
 #
-# Publica primero los artefactos portables y luego compila el paquete WiX v6.
-# El MSI resultante muestra un wizard que permite elegir entre instalar
-# "solo para mi" (sin elevacion) o "para todos los usuarios" (eleva con UAC),
-# y registra la carpeta de instalacion en el PATH correspondiente.
+# It first publishes the portable artifacts and then builds the WiX v6 package.
+# The resulting MSI shows a wizard that lets the user choose between installing
+# "just for me" (no elevation) or "for all users" (elevates with UAC), and
+# registers the installation folder in the matching PATH scope.
 #
-# Requisitos: .NET SDK 10 y conexion a NuGet (el SDK de WiX se restaura solo).
+# Requirements: .NET SDK 10 and NuGet connectivity (the WiX SDK is restored).
 #
-# Ejemplos:
+# Examples:
 #   ./installers/windows/Build-Msi.ps1
 #   ./installers/windows/Build-Msi.ps1 -Runtime win-arm64 -ProductVersion 1.2.0
 #   ./installers/windows/Build-Msi.ps1 -FrameworkDependent
@@ -37,29 +37,32 @@ $publishDir = Join-Path $repoRoot 'artifacts' $folder
 $outputDir = Join-Path $repoRoot 'artifacts' 'installers'
 $wixProject = Join-Path $PSScriptRoot 'QRGenerator.Installer.wixproj'
 
+# Keep the wizard license page in sync with the repository LICENSE (GNU GPL v3).
+& (Join-Path $PSScriptRoot 'New-LicenseRtf.ps1')
+
 if (-not $SkipPublish) {
 	$publishScript = Join-Path $repoRoot 'build' 'Publish-QrGen.ps1'
 	& $publishScript -Runtime $Runtime -Configuration $Configuration -FrameworkDependent:$FrameworkDependent
 }
 
 if (-not (Test-Path (Join-Path $publishDir 'qrgen.exe'))) {
-	throw "No se encontro 'qrgen.exe' en '$publishDir'. Ejecute la publicacion primero."
+	throw "'qrgen.exe' was not found in '$publishDir'. Run the publish step first."
 }
 
 $platform = if ($Runtime -eq 'win-arm64') { 'arm64' } else { 'x64' }
 
 New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 
-Write-Host "Compilando instalador MSI" -ForegroundColor Cyan
-Write-Host "  Runtime  : $Runtime"
-Write-Host "  Version  : $ProductVersion"
-Write-Host "  Origen   : $publishDir"
-Write-Host "  Salida   : $outputDir"
+Write-Host "Building MSI installer" -ForegroundColor Cyan
+Write-Host "  Runtime : $Runtime"
+Write-Host "  Version : $ProductVersion"
+Write-Host "  Source  : $publishDir"
+Write-Host "  Output  : $outputDir"
 
 dotnet build $wixProject -c $Configuration -p:InstallerPlatform=$platform -p:ProductVersion=$ProductVersion -p:Manufacturer=$Manufacturer -p:PublishDir=$publishDir -p:OutputPath=$outputDir -p:OutputName="qrgen-setup-$ProductVersion-$Runtime"
 
 if ($LASTEXITCODE -ne 0) {
-	throw "La compilacion del instalador fallo con codigo $LASTEXITCODE."
+	throw "Installer build failed with exit code $LASTEXITCODE."
 }
 
-Write-Host "Instalador generado en: $outputDir" -ForegroundColor Green
+Write-Host "Installer generated at: $outputDir" -ForegroundColor Green

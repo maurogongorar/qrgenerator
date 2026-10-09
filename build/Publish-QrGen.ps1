@@ -1,14 +1,14 @@
 #!/usr/bin/env pwsh
-# Publica los artefactos portables de qrgen para un runtime concreto.
+# Publishes the portable qrgen artifacts for a specific runtime.
 #
-# Script multiplataforma (PowerShell 7+, funciona en Windows, macOS y Linux).
-# Genera el ejecutable en 'artifacts/<Runtime>[-fx]'.
+# Cross-platform script (PowerShell 7+, works on Windows, macOS and Linux).
+# It produces the executable in 'artifacts/<Runtime>[-fx]'.
 #
-# Por defecto la publicacion es self-contained (no requiere tener .NET instalado
-# en la maquina destino). Use -FrameworkDependent para producir un artefacto
-# liviano que dependa del runtime .NET 10 instalado.
+# By default the publish is self-contained (the target machine does not need
+# .NET installed). Use -FrameworkDependent to produce a lightweight artifact
+# that depends on the installed .NET 10 runtime.
 #
-# Ejemplos:
+# Examples:
 #   ./build/Publish-QrGen.ps1
 #   ./build/Publish-QrGen.ps1 -Runtime osx-arm64
 #   ./build/Publish-QrGen.ps1 -Runtime linux-x64 -FrameworkDependent
@@ -54,19 +54,19 @@ if (Test-Path $OutputDirectory) {
 
 $selfContained = (-not $FrameworkDependent).ToString().ToLowerInvariant()
 
-Write-Host "Publicando qrgen" -ForegroundColor Cyan
+Write-Host "Publishing qrgen" -ForegroundColor Cyan
 Write-Host "  Runtime       : $Runtime"
-Write-Host "  Configuracion : $Configuration"
+Write-Host "  Configuration : $Configuration"
 Write-Host "  Self-contained: $selfContained"
-Write-Host "  Salida        : $OutputDirectory"
+Write-Host "  Output        : $OutputDirectory"
 
 dotnet publish $project --configuration $Configuration --runtime $Runtime --self-contained $selfContained --output $OutputDirectory
 
 if ($LASTEXITCODE -ne 0) {
-	throw "dotnet publish fallo con codigo $LASTEXITCODE."
+	throw "dotnet publish failed with exit code $LASTEXITCODE."
 }
 
-# En Unix el ejecutable debe conservar el bit de ejecucion.
+# On Unix the executable must keep the execution bit.
 if (-not $IsWindows) {
 	$exe = Join-Path $OutputDirectory 'qrgen'
 	if (Test-Path $exe) {
@@ -74,4 +74,4 @@ if (-not $IsWindows) {
 	}
 }
 
-Write-Host "Artefactos listos en: $OutputDirectory" -ForegroundColor Green
+Write-Host "Artifacts ready at: $OutputDirectory" -ForegroundColor Green

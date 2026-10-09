@@ -64,6 +64,13 @@ Comando de build: `./installers/windows/Build-Msi.ps1`
 - `ICE105` es un falso positivo en paquetes de doble alcance con un componente
   HKLM condicionado; se suprime con `<SuppressIces>ICE105</SuppressIces>`.
 - `WixUI_Advanced` requiere `WixUILicenseRtf` (ver `installers/windows/License.rtf`).
+- La pagina de licencia se genera desde el `LICENSE` del repositorio (GNU GPL v3)
+  con `installers/windows/New-LicenseRtf.ps1`, invocado por `Build-Msi.ps1`.
+- En paquetes per-user/per-machine, Windows Installer redirige
+  `ProgramFilesFolder`/`ProgramFiles64Folder` a `%LOCALAPPDATA%\Programs`
+  mientras `ALLUSERS` esta vacio. Por eso `WixPerMachineFolder` se recalcula con
+  `[%ProgramW6432]\[ApplicationFolderName]`; de lo contrario el wizard propone
+  la carpeta de AppData al elegir "todos los usuarios".
 
 ## Trabajo pendiente: macOS y Linux
 
@@ -89,5 +96,7 @@ bit de ejecucion (`Publish-QrGen.ps1` ya aplica `chmod +x` en Unix).
 - Los scripts de build usan PowerShell 7+ (`#!/usr/bin/env pwsh`) para poder
   ejecutarse en las tres plataformas.
 - Los scripts siguen la convencion `Verbo-Sustantivo.ps1` de PowerShell.
-- Comentarios y mensajes de los scripts/instaladores en espanol sin acentos
-  (compatibilidad de codificacion en consolas y en el MSI).
+- Todos los comentarios de codigo y cualquier mensaje al usuario (salida de
+  consola, textos de scripts e instaladores) deben estar en ingles, sin
+  acentos ni caracteres especiales (compatibilidad de codificacion en consolas
+  y en el MSI).

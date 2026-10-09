@@ -113,7 +113,7 @@ qrgen whatsapp --help
 - **Self-contained** artifact (default): None.
 - **framework-dependent** artifact: [.NET 10 Runtime](https://dotnet.microsoft.com/download).
 
-### Para compilar
+### To Build
 
 - [.NET SDK 10.0](https://dotnet.microsoft.com/download) or later.
 - [PowerShell 7+](https://github.com/PowerShell/PowerShell) for the scripts in `build/` and `installers/`.
